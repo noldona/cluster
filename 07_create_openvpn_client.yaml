@@ -1,0 +1,69 @@
+---
+- name: "Raspberry Pi Cluster : Configure OpenVPN"
+  hosts: head
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/general/ssl.yaml
+      - vars/general/secrets.yaml
+
+  tasks:
+      - name: "Cluster - OpenVPN - PKI : Create Client PKI Infrastructure"
+        tags:
+            - pki
+        block:
+            - name: "Cluster - OpenVPN - Client - PKI : Create private key for OpenVPN client"
+              community.crypto.openssl_privatekey:
+                  path: "{{ ssl_openvpn_client_keyfile_path }}"
+                  type: ECC
+                  curve: secp256r1
+
+            - name: "Cluster - OpenVPN - Client - PKI : Create certificate signing request (CSR) for OpenVPN client certificate"
+              community.crypto.openssl_csr_pipe:
+                  privatekey_path: "{{ ssl_openvpn_client_keyfile_path }}"
+                  common_name: "{{ ssl_openvpn_client_name }}"
+                  key_usage:
+                      - digitalSignature
+                  key_usage_critical: true
+                  digest: "sha512"
+              register: client_csr
+
+            - name: "Cluster - OpenVPN - Client - PKI : Check whether client certificate exists"
+              ansible.builtin.stat:
+                  path: "{{ ssl_openvpn_client_certfile_path }}"
+              register: client_certificate_exists
+
+            - name: "Cluster - OpenVPN - Client - PKI : Read existing client certificate if exists"
+              ansible.builtin.slurp:
+                  src: "{{ ssl_openvpn_client_certfile_path }}"
+              when: client_certificate_exists.stat.exists
+              register: client_certificate
+
+            - name: "Cluster - OpenVPN - Client - PKI : Sign client certificate with our CA"
+              community.crypto.x509_certificate_pipe:
+                  content: "{{ (client_certificate.content | b64decode) if client_certificate_exists.stat.exists else omit }}"
+                  csr_content: "{{ client_csr.csr }}"
+                  provider: ownca
+                  ownca_path: "{{ ssl_ca_certfile_path }}"
+                  ownca_privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  ownca_privatekey_passphrase: "{{ ssl_ca_passphrase }}"
+              register: client_certificate
+
+            - name: "Cluster - OpenVPN - Client - PKI : Write client certificate file"
+              ansible.builtin.copy:
+                  dest: "{{ ssl_openvpn_client_certfile_path }}"
+                  content: "{{ client_certificate.certificate }}"
+                  mode: "0644"
+              when: client_certificate is changed
+
+      - name: "Cluster - OpenVPN - Client : Create config file"
+        ansible.builtin.template:
+            src: "templates/openvpn/base.conf.j2"
+            dest: "{{ client_config_openvpn_path }}"
+            mode: "0644"
+
+      - name: "Cluster - OpenVPN - Client : Copy config file to localhost"
+        ansible.builtin.fetch:
+            src: "{{ client_config_openvpn_path }}"
+            dest: "{{ client_config_local_openvpn_path }}"

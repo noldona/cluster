@@ -1,0 +1,18 @@
+---
+openvpn_port: 1194
+openvpn_proto: udp
+
+client_config_client_name: noldona
+client_config_dir: "~/client-configs"
+client_config_key_dir: "{{ client_config_dir }}/private"
+client_config_cert_dir: "{{ client_config_dir }}/certs"
+client_config_config_dir: "{{ client_config_dir }}/files"
+
+client_config_local_openvpn_dir: "~/openvpn"
+client_config_local_dir_user: "{{ client_config_client_name }}"
+client_config_local_dir_group: "{{ client_config_client_name }}"
+
+client_config_keyfile_path: "{{ client_config_key_dir }}/{{ client_config_client_name }}.key"
+client_config_certfile_path: "{{ client_config_cert_dir }}/{{ client_config_client_name }}.crt"
+client_config_openvpn_path: "{{ client_config_config_dir }}/{{ client_config_client_name }}.ovpn"
+client_config_local_openvpn_path: "{{ client_config_local_openvpn_dir }}/{{ client_config_client_name }}.ovpn"

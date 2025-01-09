@@ -1,0 +1,32 @@
+---
+apps:
+  - name: SSH
+    direction: in
+    comment: Allow SSH connections in
+  - name: NFS
+    direction: in
+    comment: Allow NFS connections in
+  - name: 'WWW Full'
+    comment: Allow HTTP/HTTPS traffic
+  - name: DNS
+    direction: out
+    interface: eth1
+    comment: Allow DNS calls out on eth1
+  - name: DNS
+    direction: in
+    interface: eth0
+    comment: Allow DNS calls in on eth0
+
+ports:
+  - port: 67
+    interface: eth0
+    comment: Alllow DHCP calls on eth0
+  - port: 68
+    interface: eth0
+    comment: Alllow DHCP calls on eth0
+  - port: 69
+    interface: eth0
+    comment: Alllow TFTP calls on eth0
+  - port: 123
+    direction: out
+    comment: Allow NTP out

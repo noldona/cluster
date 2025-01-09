@@ -1,0 +1,43 @@
+---
+username: noldona
+release: noble
+timezone: "America/New_York"
+demo_fqdn: "rivercrest.cluster"
+
+head_node_ip: 192.168.1.31
+head_node_gateway: 192.168.1.1
+
+nodes:
+  - hostname: server1
+    address: 10.0.0.2
+    mac_address: d8:38:dd:a7:34:33
+  - hostname: server2
+    address: 10.0.0.3
+    mac_address: d8:38:dd:a7:34:79
+  - hostname: server3
+    address: 10.0.0.4
+    mac_address: d8:38:dd:a7:34:fb
+  - hostname: client1
+    address: 10.0.0.5
+    mac_address: d8:38:dd:a7:33:e1
+  - hostname: client2
+    address: 10.0.0.6
+    mac_address: d8:38:dd:a7:34:b2
+  - hostname: client3
+    address: 10.0.0.7
+    mac_address: d8:38:dd:a7:33:ac
+  - hostname: client4
+    address: 10.0.0.8
+    mac_address: d8:38:dd:a7:34:3c
+  - hostname: client5
+    address: 10.0.0.9
+    mac_address: d8:38:dd:a7:34:46
+  - hostname: client6
+    address: 10.0.0.10
+    mac_address: d8:38:dd:a7:33:0d
+  - hostname: client7
+    address: 10.0.0.11
+    mac_address: d8:38:dd:a7:33:e5
+  - hostname: client8
+    address: 10.0.0.12
+    mac_address: d8:38:dd:a7:34:49

@@ -1,0 +1,95 @@
+---
+- name: "Raspberry Pi Cluster : Initial Setup"
+  hosts: head
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/general/head.yaml
+
+  tasks:
+      - name: "Cluster - Setup : Install aptitude"
+        ansible.builtin.apt:
+            name: aptitude
+            state: present
+            update_cache: true
+
+      - name: "Cluster - Setup : Install required system packages"
+        ansible.builtin.apt:
+            name: "{{ head_apt_packages }}"
+            state: present
+
+      - name: "Cluster - Setup : Ensure the correct timezone is used"
+        community.general.system.timezone:
+            name: "{{ timezone }}"
+
+      - name: "Cluster - Setup : Setup Node system files"
+        block:
+            - name: "Cluster - Head : Ensure NFS folder exists for server1"
+              ansible.builtin.file:
+                  path: "{{ nfs_directory }}/{{ item.hostname }}"
+                  state: directory
+                  mode: "0777"
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - Head : Remove the unneeded network interface"
+              ansible.builtin.file:
+                  path: "/nfs/{{ item.hostname }}/etc/network/interfaces.d/eth1"
+                  state: absent
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - Head : Update static IP"
+              ansible.builtin.lineinfile:
+                  path: "/nfs/{{ item.hostname }}/etc/network/interfaces.d/eth0"
+                  state: present
+                  regexp: "address 10.0.0.1"
+                  line: "address {{ item.address }}"
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - Head : Update hostname"
+              ansible.builtin.lineinfile:
+                  path: "/nfs/{{ item.hostname }}/etc/hostname"
+                  regexp: "head"
+                  line: "{{ item.hostname }}"
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - Head : Update hosts"
+              ansible.builtin.lineinfile:
+                  path: "/nfs/{{ item.hostname }}/etc/hosts"
+                  regexp: "head"
+                  line: "{{ item.hostname }}"
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - Head : Update resolv.conf"
+              ansible.builtin.lineinfile:
+                  path: "/nfs/{{ item.hostname }}/etc/resolv.conf"
+                  regexp: "192.168.1.1"
+                  line: "{{ item.address }}"
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - Head : Remove PARTUUID lines"
+              ansible.builtin.lineinfile:
+                  path: "/nfs/{{ item.hostname }}/etc/fstab"
+                  regexp: "^PARTUUID=.*$"
+                  state: absent
+                  backup: true
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+      - name: "Cluster - Setup : Install next set of required system packages"
+        ansible.builtin.apt:
+            name: "{{ head_apt_packages_install_2 }}"
+            state: present

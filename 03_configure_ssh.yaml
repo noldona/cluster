@@ -1,0 +1,30 @@
+---
+- name: "Raspberry Pi Cluster : Configure SSH"
+  hosts: head
+  become: false
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/general/ssh.yaml
+
+  tasks:
+      - name: "Cluster - SSH : Generate SSH Key Pair"
+        community.crypto.openssh_keypair:
+            path: "~/.ssh/{{ ssh_key_filename }}"
+            type: ed25519
+            state: present
+            force: false
+
+      - name: "Cluster - SSH : Setup SSH Config"
+        ansible.builtin.template:
+            src: "templates/ssh/config.j2"
+            dest: "~/.ssh/config"
+            mode: "0644"
+            backup: true
+
+      - name: "Cluster - SSH : Add key to Hashistack nodes"
+        ansible.builtin.shell: "cat ~/.ssh/id_rsa.pub | tee -a /nfs/{{ item.hostname }}/home/{{ username }}/.ssh/authorized_keys > /dev/null"
+        loop: "{{ nodes }}"
+        loop_control:
+            label: "{{ item.hostname }}"
+        changed_when: true

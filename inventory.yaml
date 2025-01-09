@@ -1,0 +1,49 @@
+---
+all:
+  hosts:
+    head:
+      ansibe_host: head
+    server1:
+      ansible_host: server1
+    server2:
+      ansible_host: server2
+    server3:
+      ansible_host: server3
+    client1:
+      ansible_host: client1
+    client2:
+      ansible_host: client2
+    client3:
+      ansible_host: client3
+    client4:
+      ansible_host: client4
+    client5:
+      ansible_host: client5
+    client6:
+      ansible_host: client6
+    client7:
+      ansible_host: client7
+    client8:
+      ansible_host: client8
+
+servers:
+  hosts:
+    server1:
+    server2:
+    server3:
+
+clients:
+  hosts:
+    client1:
+    client2:
+    client3:
+    client4:
+    client5:
+    client6:
+    client7:
+    client8:
+
+hashistack:
+  children:
+    servers:
+    clients:

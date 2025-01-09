@@ -1,0 +1,25 @@
+---
+head_apt_packages:
+  - atop
+  - curl
+  - jq
+  - lynx
+  - tree
+  - unattended-upgrades
+  - vim
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - python3-pip
+  - virtualenv
+  - python3-setuptools
+  - gnupg
+
+head_apt_packages_install_2:
+  - systemd-container
+  - dnsmasq
+  - tcpdump
+  - nfs-kernel-server
+
+nfs_directory: /nfs

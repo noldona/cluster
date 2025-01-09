@@ -1,0 +1,74 @@
+---
+- name: "Raspberry Pi Cluster : Setup DNS/DCHP/TFTP server"
+  hosts: head
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/general/dns.yaml
+
+  tasks:
+      - name: "Cluster - DNSMasq : Configure DNSMasq"
+        ansible.builtin.template:
+            src: templates/dnsmasq/dnsmasq.conf.j2
+            dest: /etc/dnsmasq.conf
+            backup: true
+            force: true
+            mode: "0644"
+        notify: Restart DNSMasq
+        tags: dns
+
+      - name: "Cluster - TFTP : Create boot folders"
+        block:
+            - name: "Cluster - TFTP : Ensure boot folders exist"
+              ansible.builtin.file:
+                  path: "/tftpboot/{{ item.mac_address }}"
+                  state: directory
+                  mode: "0644"
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - TFTP : Copy boot files"
+              ansible.builtin.copy:
+                  src: "/boot/firmware/*"
+                  dest: "/tftpboot/{{ item.mac_address }}/"
+                  mode: "0777"
+                  remote_src: true
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+
+            - name: "Cluster - TFTP : Update cmdlint.txt"
+              ansible.builtin.lineinfile:
+                  path: "/tftpboot/{{ item.mac_address }}/cmdline.txt"
+                  regexp: "root=.*$"
+                  line: "root=/dev/nfs nfsroot=10.0.0.1:/nfs/{{ item.hostname }},vers=3 rw ip=dhcp rootwait elevator=deadline"
+                  backup: true
+              loop: "{{ nodes }}"
+              loop_control:
+                  label: "{{ item.hostname }}"
+              notify: Restart DNSMasq
+
+            - name: "Cluster - TFTP : Export filesystem to NFS"
+              ansible.builtin.command: 'echo "/nfs *(rw,sync,no_subtree_check,no_root_squash)" | tee -a /etc/exports'
+              changed_when: true
+              notify:
+                  - Restart RPCBind
+                  - Restart NFS Kernel Server
+
+  handlers:
+      - name: Restart DNSMasq
+        ansible.builtin.service:
+            name: dnsmasq
+            state: restarted
+
+      - name: Restart RPCBind
+        ansible.builtin.service:
+            name: rpcbind
+            state: restarted
+
+      - name: Restart NFS Kernel Server
+        ansible.builtin.service:
+            name: nfs-kernel-server
+            state: restarted

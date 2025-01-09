@@ -1,0 +1,147 @@
+---
+- name: "Raspberry Pi Cluster : Configure OpenVPN"
+  hosts: head
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/general/ssl.yaml
+      - vars/general/secrets.yaml
+
+  tasks:
+      - name: "Cluster - OpenVPN : Install required system packages"
+        ansible.builtin.apt:
+            name: openvpn
+            state: present
+
+      - name: "Cluster OpenVPN - PKI : Ensure local cert directory exists"
+        ansible.builtin.file:
+            path: "{{ ssl_local_cert_dir }}"
+            state: directory
+            mode: "0755"
+            owner: "{{ ssl_local_dir_user }}"
+            group: "{{ ssl_local_dir_group }}"
+        delegate_to: localhost
+
+      - name: "Cluster - OpenVPN - PKI : Copy CA certificate into OpenVPN"
+        ansible.builtin.copy:
+            src: "{{ ssl_ca_certfile_path }}"
+            dest: "/etc/openvpn/server"
+            remote_src: true
+            mode: "0600"
+        tags:
+            - pki
+
+      # Create Server KeyPair
+      - name: "Cluster - OpenVPN - PKI : Create Server PKI Infrastructure"
+        tags:
+            - pki
+            - server
+        block:
+            - name: "Cluster - OpenVPN - PKI : Create private key for OpenVPN server"
+              community.crypto.openssl_privatekey:
+                  path: "{{ ssl_openvpn_server_keyfile_path }}"
+                  type: ECC
+                  curve: secp256r1
+
+            - name: "Cluster - OpenVPN - PKI : Create certificate signing request (CSR) for OpenVPN server certificate"
+              community.crypto.openssl_csr_pipe:
+                  privatekey_path: "{{ ssl_openvpn_server_keyfile_path }}"
+                  common_name: "OpenVPN"
+                  key_usage:
+                      - digitalSignature
+                  key_usage_critical: true
+                  digest: "sha512"
+              register: server_csr
+
+            - name: "Cluster - OpenVPN - PKI : Check whether server certificate exists"
+              ansible.builtin.stat:
+                  path: "{{ ssl_openvpn_server_certfile_path }}"
+              register: server_certificate_exists
+
+            - name: "Cluster - OpenVPN - PKI : Read existing server certificate if exists"
+              ansible.builtin.slurp:
+                  src: "{{ ssl_openvpn_server_certfile_path }}"
+              when: server_certificate_exists.stat.exists
+              register: server_certificate
+
+            - name: "Cluster - OpenVPN - PKI : Sign server certificate with our CA"
+              community.crypto.x509_certificate_pipe:
+                  content: "{{ (server_certificate.content | b64decode) if server_certificate_exists.stat.exists else omit }}"
+                  csr_content: "{{ server_csr.csr }}"
+                  provider: ownca
+                  ownca_path: "{{ ssl_ca_certfile_path }}"
+                  ownca_privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  ownca_privatekey_passphrase: "{{ ssl_ca_passphrase }}"
+              register: server_certificate
+
+            - name: "Cluster - OpenVPN - PKI : Write server certificate file"
+              ansible.builtin.copy:
+                  dest: "{{ ssl_openvpn_server_certfile_path }}"
+                  content: "{{ server_certificate.certificate }}"
+                  mode: "0644"
+              when: server_certificate is changed
+
+      - name: "Cluster - OpenVPN - PKI : Copy OpenVPN server certificate to localhost"
+        tags:
+            - pki
+            - server
+        block:
+            - name: "Cluster - OpenVPN - PKI : Retrieve OpenVPN server certificate contents"
+              ansible.builtin.slurp:
+                  src: "{{ ssl_openvpn_server_certfile_path }}"
+              register: openvpn_certificate_slurp
+
+            - name: "Cluster - OpenVPN - PKI : Place server certificate on localhost"
+              ansible.builtin.copy:
+                  dest: "{{ ssl_openvpn_server_certfile_local_path }}"
+                  content: "{{ openvpn_certificate_slurp.content | b64decode }}"
+                  mode: "0644"
+              delegate_to: localhost
+
+      # Pre-Shared Key
+      - name: "Cluster - OpenVPN - PKi : Create Pre-Shared Key"
+        tags:
+            - pki
+        block:
+            - name: "Cluster - OpenVPN - PKI : Generate Pre-Shared Key"
+              community.crypto.openssl_privatekey:
+                  path: "{{ ssl_openvpn_preshare_keyfile_path }}"
+                  type: ECC
+                  curve: secp256r1
+
+            - name: "Cluster - OpenVPN - PKI : Copy Pre-Shared Key to OpenVPN"
+              ansible.builtin.copy:
+                  src: "{{ ssl_openvpn_preshare_keyfile_path }}"
+                  dest: "/etc/openvpn/server"
+                  remote_src: true
+                  mode: "0600"
+
+      # Configure OpenVPN
+      - name: "Cluster - OpenVPN - Config : Configure OpenVPN"
+        tags:
+            - config
+        block:
+            - name: "Cluster - OpenVPN - Config : Configure the server"
+              ansible.builtin.template:
+                  src: "templates/openvpn/server.conf.j2"
+                  dest: "/etc/openvpn/server/server.conf"
+                  mode: "0644"
+                  backup: true
+
+            - name: "Cluster - OpenVPN : Allow port connection in firewall"
+              community.general.ufw:
+                  rule: allow
+                  port: "{{ openvpn_port }}"
+                  proto: "{{ openvpn_proto }}"
+                  comment: "Allow OpenVPN traffic"
+
+            - name: "Cluster - Firewall : Reload the firewall to pickup new port"
+              community.general.ufw:
+                  state: reloaded
+
+      - name: "Cluster - OpenVPN : Start server"
+        ansible.builtin.systemd_service:
+            name: "openvpn-server@server.service"
+            state: started
+            enabled: true

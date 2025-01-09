@@ -1,0 +1,72 @@
+---
+- name: "Raspberry Pi Cluster : Public Key Infrastructure"
+  hosts: head
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/general/ssl.yaml
+      - vars/general/secrets.yaml
+
+  tasks:
+      - name: "Cluster - PKI : Check if CA file already exists"
+        ansible.builtin.stat:
+            path: "{{ ssl_ca_certfile_path }}"
+        register: ca_already_exists
+
+      - name: "Cluster - PKI : Create PKI Infrastructure"
+        when: not ca_already_exists.stat.exists
+        block:
+            - name: "Cluster - PKI : Create private key with password protection"
+              community.crypto.openssl_privatekey:
+                  path: "{{ ssl_ca_keyfile_path }}"
+                  passphrase: "{{ ssl_ca_passphrase }}"
+                  type: ECC
+                  curve: secp256r1
+
+            - name: "Cluster - PKI : Create certificate signing request (CSR) for CA certificate"
+              community.crypto.openssl_csr_pipe:
+                  privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  privatekey_passphrase: "{{ ssl_ca_passphrase }}"
+                  common_name: "{{ common_name }}"
+                  use_common_name_for_san: false
+                  basic_constraints:
+                      - "CA:TRUE"
+                  basic_constraints_critical: true
+                  key_usage:
+                      - keyCertSign
+                  key_usage_critical: true
+                  digest: "sha512"
+              register: ca_csr
+
+            - name: "Cluster - PKI : Create self-signed CA certificate from CSR"
+              community.crypto.x509_certificate:
+                  path: "{{ ssl_ca_certfile_path }}"
+                  csr_content: "{{ ca_csr.csr }}"
+                  privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  privatekey_passphrase: "{{ ssl_ca_passphrase }}"
+                  provider: selfsigned
+
+      - name: "Cluster - PKI : Copy CA certificate to localhost"
+        tags: pki
+        block:
+            - name: "Cluster - PKI : Retrieve CA certificate contents"
+              ansible.builtin.slurp:
+                  src: "{{ ssl_ca_certfile_path }}"
+              register: ca_certificate_slurp
+
+            - name: "Cluster - PKI : Ensure local directory exists"
+              ansible.builtin.file:
+                  path: "{{ ssl_local_dir }}"
+                  state: directory
+                  mode: "0755"
+                  owner: "{{ ssl_local_dir_user }}"
+                  group: "{{ ssl_local_dir_group }}"
+              delegate_to: localhost
+
+            - name: "Cluster- PKI : Place certificate on localhost"
+              ansible.builtin.copy:
+                  dest: "{{ ssl_ca_certfile_local_path }}"
+                  content: "{{ ca_certificate_slurp.content | b64decode }}"
+                  mode: "0644"
+              delegate_to: localhost

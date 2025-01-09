@@ -1,0 +1,8 @@
+{% for node in nodes %}
+Host {{ node.hostname }}
+	User {{ username }}
+	Port 22
+	HostName {{ node.address }}
+	IdentityFile ~/.ssh/{{ ssh_key_filename}}
+	IdentitiesOnly yes
+{% endfor %}
