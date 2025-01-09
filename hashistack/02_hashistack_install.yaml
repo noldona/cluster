@@ -1,0 +1,70 @@
+---
+- name: "Raspberry Pi Cluster - Hashistack - Hashistack Setup"
+  hosts: hashistack
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/hashicorp/main.yaml
+
+  tasks:
+      - name: "HashiCorp - Install : Add HashiCorp GPG apt key"
+        ansible.builtin.apt_key:
+            url: https://apt.releases.hashicorp.com/gpg
+            state: present
+
+      - name: "HashiCorp - Install : Add HashiCorp Repository"
+        ansible.builtin.apt_repository:
+            repo: deb https://apt.releases.hashicorp.com {{ release }} main
+            state: present
+
+      - name: "HashiCorp - Install : Update apt and install Hashistack"
+        ansible.builtin.apt:
+            name: "{{ hashicorp_product_selection }}"
+            state: present
+            update_cache: true
+
+      - name: "HashiCorp - Install : Install Autocompletion"
+        ansible.builtin.command: "{{ item[0] }} -autocomplete-install"
+        become: "{{ item[1] }}"
+        with_nested:
+            - "{{ hashicorp_autocomplete_products }}"
+            - ["true", "false"]
+        register: autoinstall_cmd
+        changed_when:
+            - not 'already installed' in autoinstall_cmd.stderr
+            - not 'already installed' in autoinstall_cmd.stdout
+        failed_when:
+            - autoinstall_cmd.rc != 0
+            - not 'already installed' in autoinstall_cmd.stderr
+            - not 'already installed' in autoinstall_cmd.stdout
+
+      #   - name: "HashiCorp - Install : Install Autocompletion - Terraform"
+      #     ansible.builtin.command: "terraform -install-autocomplete"
+      #     become: "{{ item }}"
+      #     loop:
+      #         - "true"
+      #         - "false"
+      #     register: autoinstall_cmd
+      #     changed_when:
+      #         - not 'already installed' in autoinstall_cmd.stderr
+      #         - not 'already installed' in autoinstall_cmd.stdout
+      #     failed_when:
+      #         - autoinstall_cmd.rc != 0
+      #         - not 'already installed' in autoinstall_cmd.stderr
+      #         - not 'already installed' in autoinstall_cmd.stdout
+
+      #   - name: "HashiCorp - Install : Install Autocompletion - Vagrant"
+      #     ansible.builtin.command: "vagrant autocomplete install --bash"
+      #     become: "{{ item }}"
+      #     loop:
+      #         - "true"
+      #         - "false"
+      #     register: autoinstall_cmd
+      #     changed_when:
+      #         - not 'already installed' in autoinstall_cmd.stderr
+      #         - not 'already installed' in autoinstall_cmd.stdout
+      #     failed_when:
+      #         - autoinstall_cmd.rc != 0
+      #         - not 'already installed' in autoinstall_cmd.stderr
+      #         - not 'already installed' in autoinstall_cmd.stdout

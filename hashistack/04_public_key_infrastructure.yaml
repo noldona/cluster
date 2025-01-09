@@ -1,0 +1,170 @@
+---
+- name: "Raspberry Pi Cluster - Hashistack - Public Key Infrastructure"
+  hosts: hashistack
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/hashicorp/main.yaml
+      - vars/hashicorp/ssl.yaml
+
+  vars:
+      ansible_python_interpreter: "{{ venv }}/bin/python"
+
+  tasks:
+      - name: "HashiCorp - PKI : Check if CA file already exists"
+        ansible.builtin.stat:
+            path: "{{ ssl_ca_certfile_path }}"
+        register: ca_already_exists
+
+      # Certificate Authority
+      - name: "HashiCorp - PKI : Create PKI Infrastructure on head node"
+        when: not ca_already_exists.stat.exists
+        delegate_to: head
+        run_once: true # noqa run-once[task]
+        block:
+            - name: "HashiCorp - PKI : Create private key with password protection."
+              community.crypto.openssl_privatekey:
+                  path: "{{ ssl_ca_keyfile_path }}"
+
+            - name: "HashiCorp - PKI : Create certificate signing request (CSR) for CA certificate."
+              community.crypto.openssl_csr_pipe:
+                  privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  common_name: Rivercrest
+                  use_common_name_for_san: false
+                  basic_constraints:
+                      - "CA:TRUE"
+                  basic_constraints_critical: true
+                  key_usage:
+                      - keyCertSign
+                  key_usage_critical: true
+              register: ca_csr
+
+            - name: "HashiCorp - PKI : Create self-signed CA certificate from CSR."
+              community.crypto.x509_certificate:
+                  path: "{{ ssl_ca_certfile_path }}"
+                  csr_content: "{{ ca_csr.csr }}"
+                  privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  provider: selfsigned
+              register: ca_certificate
+
+      # Webapp certificate
+      - name: "HashiCorp - PKI : Create PKI Infrastructure on head node"
+        delegate_to: head
+        run_once: true # noqa run-once[task]
+        block:
+            - name: "HashiCorp - PKI : Create private key for webapp certificate"
+              community.crypto.openssl_privatekey:
+                  path: "{{ ssl_webapp_keyfile_path }}"
+
+            - name: Retrieve private key contents
+              ansible.builtin.slurp:
+                  src: "{{ ssl_webapp_keyfile_path }}"
+              register: keyfile
+
+            - name: "HashiCorp - PKI : Create certificate signing request (CSR) for webapp certificate"
+              community.crypto.openssl_csr_pipe:
+                  privatekey_path: "{{ ssl_webapp_keyfile_path }}"
+                  common_name: "{{ demo_fqdn }}"
+                  subject_alt_name:
+                      - "DNS:{{ demo_fqdn }}"
+              register: csr
+
+            - name: "HashiCorp - PKI : Check whether certificate exits"
+              ansible.builtin.stat:
+                  path: "{{ ssl_webapp_certfile_path }}"
+              register: certificate_exists
+
+            - name: "HashiCorp - PKI : Read existing certificate if exists"
+              ansible.builtin.slurp:
+                  src: "{{ ssl_webapp_certfile_path }}"
+              when: certificate_exists.stat.exists
+              register: certificate
+
+            - name: "HashiCorp - PKI : Sign certificate with our CA"
+              community.crypto.x509_certificate_pipe:
+                  content: "{{ (certificate.content | b64decode) if certificate_exists.stat.exists else omit }}"
+                  csr_content: "{{ csr.csr }}"
+                  provider: ownca
+                  ownca_path: "{{ ssl_ca_certfile_path }}"
+                  ownca_privatekey_path: "{{ ssl_ca_keyfile_path }}"
+              register: certificate
+
+            - name: "HashiCorp - PKI : Write certificate file"
+              ansible.builtin.copy:
+                  dest: "{{ ssl_webapp_certfile_path }}"
+                  content: "{{ certificate.certificate }}"
+                  mode: "0644"
+              when: certificate is changed
+
+      # Distribute the CA certificate to the rest of the environment
+      - name: "HashiCorp - PKI : Distribute the CA certificate to the rest of the environment"
+        block:
+            - name: "HashiCorp - PKI :  Retrieve CA certificate contents"
+              ansible.builtin.slurp:
+                  src: "{{ ssl_ca_certfile_path }}"
+              register: ca_certificate_slurp
+              delegate_to: head
+              run_once: true # noqa run-once[task]
+              tags: shared
+
+            - name: "HashiCorp - PKI : Place certificate in default location"
+              ansible.builtin.copy:
+                  dest: "{{ ssl_ca_certfile_path }}"
+                  content: "{{ ca_certificate_slurp.content | b64decode }}"
+                  mode: "0644"
+
+      # Create all SSL certificates for both the servers and the clients
+      - name: "HashiCorp - PKI : Create all SSL certificates for both the servers and the clients"
+        block:
+            - name: "HashiCorp - PKI : Create private key for new certificate"
+              community.crypto.openssl_privatekey:
+                  path: "{{ ssl_member_keyfile_path }}"
+
+            - name: "HashiCorp - PKI : Create certificate signing request (CSR) for new certificate"
+              community.crypto.openssl_csr_pipe:
+                  privatekey_path: "{{ ssl_member_keyfile_path }}"
+                  common_name: "{{ ssl_member_filename }}"
+                  subject_alt_name:
+                      - "DNS:{{ ssl_member_filename }}"
+              register: member_csr
+
+            - name: "HashiCorp - PKI : Check whether certificate exists"
+              ansible.builtin.stat:
+                  path: "{{ ssl_member_certfile_path }}"
+              register: member_certificate_exists
+
+            - name: "HashiCorp - PKI : Read existing certificate if exists"
+              ansible.builtin.slurp:
+                  src: "{{ ssl_member_certfile_path }}"
+              when: member_certificate_exists.stat.exists
+              register: member_certificate
+
+            - name: "HashiCorp - PKI : Sign certificate with our CA"
+              community.crypto.x509_certificate_pipe:
+                  content: "{{ (member_certificate.content | b64decode) if member_certificate_exists.stat.exists else omit }}"
+                  csr_content: "{{ member_csr.csr }}"
+                  provider: ownca
+                  ownca_path: "{{ ssl_ca_certfile_path }}"
+                  ownca_privatekey_path: "{{ ssl_ca_keyfile_path }}"
+              register: member_certificate
+              delegate_to: head
+
+            - name: "HashiCorp - PKI : Write certificate file"
+              ansible.builtin.copy:
+                  dest: "{{ ssl_member_certfile_path }}"
+                  content: "{{ member_certificate.certificate }}"
+                  mode: "0644"
+              when: member_certificate is changed
+
+      - name: "HashiCorp - PKI : Ensure the CA certificate is copied to the local cert directory"
+        ansible.builtin.copy:
+            dest: "{{ ssl_shared_dir }}/{{ ssl_ca_filename }}.crt"
+            content: "{{ ca_certificate_slurp.content | b64decode }}"
+            mode: "0644"
+        tags: shared
+
+      - name: "HashiCorp - PKI : Ensure certificate index is updated"
+        ansible.builtin.command: "/usr/sbin/update-ca-certificates -f"
+        changed_when: false
+        tags: shared

@@ -1,0 +1,10 @@
+- name: General Setup
+  import_playbook: 00_general_setup.yaml
+- name: Docker Install
+  import_playbook: 01_docker_install.yaml
+- name: Hashistack Install
+  import_playbook: 02_hashistack_install.yaml
+- name: DNSMasq Install
+  import_playbook: 03_dnsmaqs_install.yaml
+- name: PKI Setup
+  import_playbook: 04_public_key_infrastructure.yaml

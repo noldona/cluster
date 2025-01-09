@@ -1,0 +1,42 @@
+---
+- name: "Raspberry Pi Cluster - Hashistack - General Setup"
+  hosts: all
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/hashicorp/main.yaml
+
+  tasks:
+      - name: "General Setup : Install aptitude"
+        ansible.builtin.apt:
+            name: aptitude
+            state: present
+            update_cache: true
+
+      - name: "General Setup : Install required system packages"
+        ansible.builtin.apt:
+            name: "{{ basic_apt_packages }}"
+            state: present
+        tags: apt
+
+      - name: "General Setup - Install pip packages"
+        ansible.builtin.pip:
+            name: "{{ item }}"
+            state: present
+            virtualenv: "{{ venv }}"
+            virtualenv_command: /usr/bin/python3.11 -m venv
+        loop: "{{ pip_install_packages }}"
+
+      - name: "General Setup : Ensure the correct timezone is used"
+        community.general.system.timezone:
+            name: "{{ timezone }}"
+
+      - name: "General Setup : Ensure token directory is present"
+        ansible.builtin.file:
+            path: "{{ token_directory }}/"
+            state: directory
+            mode: "0755"
+        delegate_to: localhost
+        become: false
+        run_once: true # noqa run-once[task]

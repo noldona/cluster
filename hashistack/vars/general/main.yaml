@@ -1,0 +1,46 @@
+---
+username: noldona
+release: bookworm
+
+mac_addresses:
+  - d8:38:dd:a7:34:33
+  - d8:38:dd:a7:34:79
+  - d8:38:dd:a7:34:fb
+  - d8:38:dd:a7:33:e1
+  - d8:38:dd:a7:34:b2
+  - d8:38:dd:a7:33:ac
+  - d8:38:dd:a7:34:3c
+  - d8:38:dd:a7:34:46
+  - d8:38:dd:a7:33:0d
+  - d8:38:dd:a7:33:e5
+  - d8:38:dd:a7:34:49
+
+venv: /opt/hashistack-venv
+
+pip_install_packages:
+  - cryptography
+  - docker
+  - hvac
+  - jmespath
+  - python-nomad
+
+basic_apt_packages:
+  - atop
+  - curl
+  - jq
+  - lynx
+  - tree
+  - unattended-upgrades
+  - vim
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - python3-pip
+  - virtualenv
+  - python3-setuptools
+  - gnupg
+
+timezone: "America/New_York"
+
+demo_fqdn: "rivercrest.cluster"

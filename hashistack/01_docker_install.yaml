@@ -1,0 +1,36 @@
+---
+- name: "Raspberry Pi Cluster - Hashistack - Docker Setup"
+  hosts: hashistack
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+
+  tasks:
+      - name: "Docker : Add Docker GPG apt key"
+        ansible.builtin.apt_key:
+            url: https://download.docker.com/linux/debian/gpg
+            state: present
+        tags: docker
+
+      - name: "Docker : Add Docker Repository"
+        ansible.builtin.apt_repository:
+            repo: deb [arch=arm64] https://download.docker.com/linux/debian {{ release }} stable
+            state: present
+        tags: docker
+
+      - name: "Docker : Update apt and install docker-ce"
+        ansible.builtin.apt:
+            pkg:
+                - docker-ce
+                - docker-ce-cli
+                - docker-ce-rootless-extras
+            state: present
+            update_cache: true
+        tags: docker
+
+      - name: "Docker : Install Docker Module for Python"
+        ansible.builtin.apt:
+            pkg:
+                - python3-docker
+        tags: docker

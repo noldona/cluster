@@ -1,0 +1,70 @@
+---
+- name: "Raspberry Pi Cluster - Hashistack - DNSMasq Setup"
+  hosts: hashistack
+  become: true
+
+  tasks:
+      - name: "DNSMasq : Ensure hosts file has correct entry for 127.0.0.1"
+        ansible.builtin.lineinfile:
+            path: /etc/hosts
+            regexp: "^127.0.0.1$"
+            line: "127.0.0.1 {{ ansible_hostname }}"
+        tags: hosts
+
+      - name: "DNSMasq : Ensure dnsmasq is present"
+        ansible.builtin.apt:
+            name: dnsmasq
+            state: present
+        tags: dns
+
+      - name: "DNSMasq : Retrieve current DNS server"
+        ansible.builtin.shell: "awk '/nameserver/ {print $2}' /etc/resolv.conf"
+        become: false
+        changed_when: false
+        register: current_dns_server
+        tags: dns
+
+      - name: "DNSMasq : Set the current DNS server as a fact"
+        ansible.builtin.set_fact:
+            dnsmasq_default_domain_server: "{{ current_dns_server.stdout_lines[0] }}"
+        tags: dns
+
+      - name: "DNSMasq : Ensure new default dnsmasq config is in place"
+        ansible.builtin.template:
+            src: templates/dnsmasq/dnsmasq.conf.j2
+            dest: /etc/dnsmasq.conf
+            backup: true
+            force: true
+            mode: "0644"
+        notify: Restart dnsmasq
+        tags: dns
+
+      - name: "DNSMasq : Ensure Consul dnsmasq config is in place"
+        ansible.builtin.template:
+            src: templates/dnsmasq/dnsmasq.d/10-consul.j2
+            dest: /etc/dnsmasq.d/10-consul
+            force: true
+            mode: "0644"
+        notify: Restart dnsmasq
+        tags: dns
+
+      - name: "DNSMasq : Ensure new resolv.conf file is present"
+        ansible.builtin.template:
+            src: templates/dnsmasq/resolv.conf.j2
+            dest: /etc/resolv.conf
+            mode: "0644"
+            force: true
+        tags: dns
+
+      - name: "DNSMasq : Ensure dnsmasq is started and enabled"
+        ansible.builtin.service:
+            name: dnsmasq
+            state: started
+            enabled: true
+        tags: dns
+
+  handlers:
+      - name: "DNSMasq : Restart dnsmasq"
+        ansible.builtin.service:
+            name: dnsmasq
+            state: restarted

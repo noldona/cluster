@@ -1,0 +1,85 @@
+---
+- name: "Raspberry Pi Cluster - Hashistack - Nomad - Jobs : Demo Jobs"
+  hosts: hashistack
+  become: true
+
+  vars_files:
+      - vars/general/main.yaml
+      - vars/hashicorp/main.yaml
+      - vars/hashicorp/nomad.yaml
+      - vars/hashicorp/demo.yaml
+      - vars/hashicorp/ssl.yaml
+
+  tasks:
+      - name: "HashiCorp - Nomad - Jobs : Retrieve operator Secret ID"
+        ansible.builtin.shell: "awk '/Secret ID/ {print $4}' {{ nomad_operator_token_local_path }}"
+        changed_when: false
+        become: false
+        delegate_to: localhost
+        run_once: true # noqa run-once[task]
+        register: nomad_operator_token
+
+      - name: "HashiCorp - Nomad - Jobs : Register the Node ID from the first client from constraints demo"
+        ansible.builtin.shell: "{{ nomad_binary }} node status -self -short | grep ID -m1 | awk '{print $3}'"
+        environment:
+            NOMAD_TOKEN: "{{ nomad_operator_token.stdout }}"
+        changed_when: false
+        register: nomad_first_client_node_id
+        delegate_to: "{{ groups['clients'] | first }}"
+        run_once: true # noqa run-once[task]
+
+      - name: "HashiCorp - Nomad - Jobs : Ensure FQDN in first server"
+        ansible.builtin.lineinfile:
+            path: "/etc/hosts"
+            regexp: "{{ hostvars[item].ansible_default_ipv4.address }} {{ demo_fqdn }}"
+            line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ demo_fqdn }}"
+        delegate_to: "{{ groups['servers'] | first }}"
+        with_items: "{{ groups.servers | first }}"
+        run_once: true
+        tags: demo-fqdn
+
+      - name: "HashiCorp - Nomad - Jobs : Deployment"
+        when: ansible_hostname in groups['servers']
+        delegate_to: "{{groups['servers'] | first}}"
+        run_once: true # noqa run-once[task]
+        block:
+            - name: "HashiCorp - Nomad - Jobs : Ensure job directory is present on the first server"
+              ansible.builtin.file:
+                  path: "{{ nomad_demo_job_remote_location }}"
+                  state: directory
+                  recurse: true
+              become: true
+
+            - name: "HashiCorp - Nomad - Jobs : Ensure job directory is present on this client"
+              ansible.builtin.file:
+                  path: "{{ nomad_demo_job_local_location }}"
+                  state: directory
+                  mode: "0777"
+              delegate_to: localhost
+              become: false
+
+            - name: "HashiCorp - Nomad - Jobs : Ensure demo jobs are templated and in place"
+              ansible.builtin.template:
+                  src: "{{ item.template }}"
+                  dest: "{{ item.destination }}"
+                  mode: "0666"
+              with_items: "{{ nomad_demo_job_names }}"
+              when: nomad_first_client_node_id is defined
+
+            - name: "HashiCorp - Nomad - Jobs : Retrieve job content"
+              ansible.builtin.fetch:
+                  src: "{{ item.destination }}"
+                  dest: "{{ nomad_demo_job_local_location }}/"
+                  flat: true
+              with_items: "{{ nomad_demo_job_names }}"
+
+            - name: "HashiCorp - Nomad - Jobs : Ensure demo jobs are running"
+              community.general.nomad_job:
+                  host: localhost
+                  use_ssl: false
+                  state: present
+                  token: "{{ nomad_operator_token.stdout }}"
+                  content: "{{ lookup('file', item.local) }}"
+                  timeout: 60
+                  force_start: true
+              with_items: "{{ nomad_demo_job_names }}"

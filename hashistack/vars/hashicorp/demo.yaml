@@ -1,0 +1,28 @@
+---
+nomad_demo_job_remote_location: "/opt/nomad/demo-jobs"
+nomad_demo_job_local_location: "~/demo-jobs"
+
+traefik_demo_template_location: "templates/hashicorp/nomad/demo-jobs/traefik.nomad.j2"
+traefik_demo_docker_image: "traefik:v2.6.1"
+traefik_demo_custom_certs: "webapp"
+traefik_demo_default_cert: "webapp"
+
+at_demo_name: "at-demo"
+at_demo_port_name: "at-http"
+at_demo_job_template_location: "templates/hashicorp/nomad/demo-jobs/at-demo.nomad.j2"
+at_demo_group_count: "3"
+at_demo_service_tag_traefik_rule: "Host(`{{ demo_fqdn }}`)"
+at_demo_task_config_image: "ghcr.io/chrisvanmeer/at-image:latest"
+at_demo_force_pull: "true"
+at_demo_task_resources_cpu_mhz: "100"
+at_demo_task_resources_mem_mb: "50"
+
+nomad_demo_job_names:
+  - job_name: "traefik"
+    template: "{{ traefik_demo_template_location }}"
+    destination: "{{ nomad_demo_job_remote_location }}/traefik.nomad"
+    local: "{{ nomad_demo_job_local_location }}/traefik.nomad"
+  - job_name: "at-demo"
+    template: "{{ at_demo_job_template_location }}"
+    destination: "{{ nomad_demo_job_remote_location }}/at-demo.nomad"
+    local: "{{ nomad_demo_job_local_location }}/at-demo.nomad"
