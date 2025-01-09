@@ -12,10 +12,14 @@ setup your cluster. All Ansible scripts should be run from your localhost.
 
 ## What we are going to build
 
-In this tutorial, we are going to build a 12-node cluster. All of the
-nodes will be powered using Power over Ethernet, and other than the first
-node, will be booted using network booting. The first node will be booted
-off of an SSD.
+In this tutorial, we are going to build a 12-node cluster. The purpose
+of this cluster is for a home lab learning environment, and not intended
+to be used in a full scale production environment. As such, some shortcuts
+have been made. These will be pointed out in the appropriate places.
+
+All of the nodes will be powered using Power over Ethernet, and other
+than the first node, will be booted using network booting. The first node
+will be booted off of an SSD.
 
 The first node will be referred to as the head node. It will run a
 variety of utilities that will be useful for the cluster. The utilities

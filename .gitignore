@@ -23,4 +23,4 @@
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocod
 
 ## Prevent passwords from getting stored
-./vars/general/secrets.yaml
+vars/general/secrets.yaml
