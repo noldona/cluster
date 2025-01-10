@@ -19,6 +19,18 @@ If you want to run the steps manually, continue here.
 
 ## Step 1:
 
+## Step 6: Setup the OpenVPN client on your locahost
+
+### Windows Host
+
+### Linux Host
+
+### Mac Host
+
+### Android Host
+
+### iOS Host
+
 ## Next Step
 
 ## Reference Links

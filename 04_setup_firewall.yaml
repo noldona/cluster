@@ -26,7 +26,7 @@
               community.general.ufw:
                   default: deny
                   direction: incoming
-                  comment: "Deny all incomming traffic"
+                  comment: "Deny all incoming traffic"
 
             - name: "Cluster - Firewall : Allow app connections"
               community.general.ufw:
@@ -34,6 +34,7 @@
                   name: "{{ item.name }}"
                   direction: "{{ item.direction }}"
                   comment: "{{ item.comment }}"
+                  interface: "{{ item.interface }}"
               loop: "{{ apps }}"
               loop_control:
                   label: "{{ item.name }}"
@@ -44,6 +45,7 @@
                   port: "{{ item.port }}"
                   direction: "{{ item.direction }}"
                   comment: "{{ item.comment }}"
+                  interface: "{{ item.interface }}"
               loop: "{{ ports }}"
               loop_control:
                   label: "{{ item.name }}"

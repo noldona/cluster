@@ -82,22 +82,31 @@
                   mode: "0644"
               when: server_certificate is changed
 
-      - name: "Cluster - OpenVPN - PKI : Copy OpenVPN server certificate to localhost"
+      - name: "Cluster - OpenVPN - PKI : Copy OpenVPN server key and certificate to the OpenVPN server"
         tags:
             - pki
             - server
         block:
-            - name: "Cluster - OpenVPN - PKI : Retrieve OpenVPN server certificate contents"
-              ansible.builtin.slurp:
-                  src: "{{ ssl_openvpn_server_certfile_path }}"
-              register: openvpn_certificate_slurp
-
-            - name: "Cluster - OpenVPN - PKI : Place server certificate on localhost"
+            - name: "Cluster - OpenVPN - PKI : Copy the OpenVPN server key"
               ansible.builtin.copy:
-                  dest: "{{ ssl_openvpn_server_certfile_local_path }}"
-                  content: "{{ openvpn_certificate_slurp.content | b64decode }}"
-                  mode: "0644"
-              delegate_to: localhost
+                  src: "{{ ssl_openvpn_server_keyfile_path }}"
+                  dest: "/etc/openvpn/server"
+                  remote_src: true
+                  mode: "0600"
+
+            - name: "Cluster - OpenVPN - PKI : Copy the OpenVPN server certificate"
+              ansible.builtin.copy:
+                  src: "{{ ssl_openvpn_server_certfile_path }}"
+                  dest: "/etc/openvpn/server"
+                  remote_src: true
+                  mode: "0600"
+
+            - name: "Cluster - OpenVPN - PKI : Copy the CA certificate"
+              ansible.builtin.copy:
+                  src: "{{ ssl_ca_certfile_path }}"
+                  dest: "/etc/openvpn/server"
+                  remote_src: true
+                  mode: "0600"
 
       # Pre-Shared Key
       - name: "Cluster - OpenVPN - PKi : Create Pre-Shared Key"
@@ -105,10 +114,8 @@
             - pki
         block:
             - name: "Cluster - OpenVPN - PKI : Generate Pre-Shared Key"
-              community.crypto.openssl_privatekey:
-                  path: "{{ ssl_openvpn_preshare_keyfile_path }}"
-                  type: ECC
-                  curve: secp256r1
+              ansible.builtin.command: "openvpn --genkey --secret {{ ssl_openvpn_preshare_keyfile_path }}"
+              changed_when: true
 
             - name: "Cluster - OpenVPN - PKI : Copy Pre-Shared Key to OpenVPN"
               ansible.builtin.copy:

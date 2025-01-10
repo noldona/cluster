@@ -516,3 +516,9 @@ https://linux-tips.com/t/dnsmasq-show-ip-lease-information/231
 https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-a-certificate-authority-ca-on-ubuntu-20-04
 
 https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-an-openvpn-server-on-ubuntu-20-04
+
+## TODO
+
+-   [ ] Expand the explaination on all the steps
+-   [ ] Add the steps to configure the OpenVPN client for each of the OSes
+-   [ ] Move the Certificate Authority server off of the head node

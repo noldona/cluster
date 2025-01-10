@@ -21,6 +21,7 @@
               community.crypto.openssl_privatekey:
                   path: "{{ ssl_ca_keyfile_path }}"
                   passphrase: "{{ ssl_ca_passphrase }}"
+                  cipher: auto
                   type: ECC
                   curve: secp256r1
 
@@ -35,6 +36,7 @@
                   basic_constraints_critical: true
                   key_usage:
                       - keyCertSign
+                      - cRLSign
                   key_usage_critical: true
                   digest: "sha512"
               register: ca_csr
