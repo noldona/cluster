@@ -5,6 +5,7 @@
 
   vars_files:
       - vars/general/main.yaml
+      - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
 
   tasks:

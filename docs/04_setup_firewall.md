@@ -13,6 +13,11 @@ this, we will be use UFW.
 | apps     | `SSH, NFS, WWW Full, DNS` | The list of apps that ports will be opened for |
 | ports    | `67, 68, 69, 123`         | The list of ports that will be opened          |
 
+#### Variable Files
+
+-   vars/general/main.yaml
+-   vars/general/firewall.yaml
+
 If you are using Ansible, set these variables appropriately, and run the
 script now. Once it is done, go to [Next Step](#next-step).
 
@@ -148,6 +153,5 @@ sudo ufw status
 
 ## Reference Links
 
-https://github.com/imthenachoman/How-To-Secure-A-Linux-Server?tab=readme-ov-file#the-network
-
-https://unix.stackexchange.com/questions/575178/sharing-wifi-internet-through-ethernet-interface
+-   https://github.com/imthenachoman/How-To-Secure-A-Linux-Server?tab=readme-ov-file#the-network
+-   https://unix.stackexchange.com/questions/575178/sharing-wifi-internet-through-ethernet-interface

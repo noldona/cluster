@@ -18,6 +18,11 @@ the authorized keys on the Hashistack nodes.
 | username         | `pi`          | The username used on the cluster           |
 | ssh_key_filename | `id_ed25519`  | The filename for the keypair being created |
 
+#### Variable Files
+
+-   vars/general/main.yaml
+-   vars/general/ssh.yaml
+
 If you are using Ansible, set these variables appropriately, and run the
 script now. Once it is done, go to [Next Step](#next-step).
 

@@ -4,8 +4,10 @@
   become: true
 
   vars_files:
-      - vars/general/main.yaml
+      - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
+      - vars/general/ssl.yaml
+      - vars/general/secrets.yaml
       - vars/hashicorp/ssl.yaml
 
   vars:
@@ -17,40 +19,9 @@
             path: "{{ ssl_ca_certfile_path }}"
         register: ca_already_exists
 
-      # Certificate Authority
-      - name: "HashiCorp - PKI : Create PKI Infrastructure on head node"
-        when: not ca_already_exists.stat.exists
-        delegate_to: head
-        run_once: true # noqa run-once[task]
-        block:
-            - name: "HashiCorp - PKI : Create private key with password protection."
-              community.crypto.openssl_privatekey:
-                  path: "{{ ssl_ca_keyfile_path }}"
-
-            - name: "HashiCorp - PKI : Create certificate signing request (CSR) for CA certificate."
-              community.crypto.openssl_csr_pipe:
-                  privatekey_path: "{{ ssl_ca_keyfile_path }}"
-                  common_name: Rivercrest
-                  use_common_name_for_san: false
-                  basic_constraints:
-                      - "CA:TRUE"
-                  basic_constraints_critical: true
-                  key_usage:
-                      - keyCertSign
-                  key_usage_critical: true
-              register: ca_csr
-
-            - name: "HashiCorp - PKI : Create self-signed CA certificate from CSR."
-              community.crypto.x509_certificate:
-                  path: "{{ ssl_ca_certfile_path }}"
-                  csr_content: "{{ ca_csr.csr }}"
-                  privatekey_path: "{{ ssl_ca_keyfile_path }}"
-                  provider: selfsigned
-              register: ca_certificate
-
       # Webapp certificate
       - name: "HashiCorp - PKI : Create PKI Infrastructure on head node"
-        delegate_to: head
+        delegate_to: "{{ groups['servers'] | first }}"
         run_once: true # noqa run-once[task]
         block:
             - name: "HashiCorp - PKI : Create private key for webapp certificate"
@@ -88,7 +59,9 @@
                   provider: ownca
                   ownca_path: "{{ ssl_ca_certfile_path }}"
                   ownca_privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  privatekey_passphrase: "{{ ssl_ca_passphrase }}"
               register: certificate
+              delegate_to: head
 
             - name: "HashiCorp - PKI : Write certificate file"
               ansible.builtin.copy:
@@ -147,6 +120,7 @@
                   provider: ownca
                   ownca_path: "{{ ssl_ca_certfile_path }}"
                   ownca_privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  privatekey_passphrase: "{{ ssl_ca_passphrase }}"
               register: member_certificate
               delegate_to: head
 

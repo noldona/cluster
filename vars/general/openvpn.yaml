@@ -2,7 +2,7 @@
 openvpn_port: 1194
 openvpn_proto: udp
 
-client_config_client_name: pi
+client_config_client_name: noldona
 client_config_dir: "~/client-configs"
 client_config_key_dir: "{{ client_config_dir }}/private"
 client_config_cert_dir: "{{ client_config_dir }}/certs"

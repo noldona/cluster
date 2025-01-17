@@ -10,7 +10,7 @@
   tasks:
       - name: "Cluster - DNSMasq : Configure DNSMasq"
         ansible.builtin.template:
-            src: templates/dnsmasq/dnsmasq.conf.j2
+            src: templates/dnsmasq/dnsmasq_head.conf.j2
             dest: /etc/dnsmasq.conf
             backup: true
             force: true

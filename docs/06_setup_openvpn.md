@@ -25,6 +25,13 @@ outside of it.
 | openvpn_proto     | `udp`         | The protocol OpenVPN will listen on            |
 | ssl_ca_passphrase | ``            | This is the password for your CA Authority key |
 
+#### Variable Files
+
+-   vars/general/main.yaml
+-   vars/general/ssl.yaml
+-   vars/general/secrets.yaml
+-   vars/general/openvpn.yaml
+
 > [!IMPORTANT]  
 > The ansible script expects a `vars/genera/secrets.yaml` file to exist.
 > As this file will contain things like passwords and should not be commited
@@ -47,7 +54,7 @@ sudo apt install openvpn
 
 > [!TIP]  
 > We will also be using EasyRSA to generate our keys for OpenVPN. If you
-> not completed the steps in [Setup CA Authority](05_setup_ca_authority.md),
+> have not completed the steps in [Setup CA Authority](05_setup_ca_authority.md),
 > do that now before continuing with this. It is recommended that if you
 > ran the Ansible script for setting up the CA Authority, that you run
 > the Ansible script for this as well due to the location of the keys and
@@ -93,8 +100,9 @@ entered when you created the CA key here.
 
 ### Step 2.4: Copy the public certificate to the OpenVPN server
 
-This will create the certificate file, `~/easy-rsa/pki/issued/openvpn-server.crt`.
-This file needs to be copied to the OpenVPN server directory as well.
+The previous step will create the certificate file,
+`~/easy-rsa/pki/issued/openvpn-server.crt`. This file needs to be copied
+to the OpenVPN server directory as well.
 
 ```bash
 sudo cp ~/easy-rsa/pki/issued/openvpn-server.ct /etc/openvpn/server
@@ -272,4 +280,4 @@ sudo systemctl status openvpn-server@server.service
 
 ## Reference Links
 
-https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-an-openvpn-server-on-ubuntu-20-04
+-   https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-an-openvpn-server-on-ubuntu-20-04

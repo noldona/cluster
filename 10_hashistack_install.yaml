@@ -5,6 +5,7 @@
 
   vars_files:
       - vars/general/main.yaml
+      - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
 
   tasks:
@@ -28,7 +29,7 @@
         ansible.builtin.command: "{{ item[0] }} -autocomplete-install"
         become: "{{ item[1] }}"
         with_nested:
-            - "{{ hashicorp_autocomplete_products }}"
+            - "{{ hashicorp_product_selection }}"
             - ["true", "false"]
         register: autoinstall_cmd
         changed_when:
@@ -38,33 +39,3 @@
             - autoinstall_cmd.rc != 0
             - not 'already installed' in autoinstall_cmd.stderr
             - not 'already installed' in autoinstall_cmd.stdout
-
-      #   - name: "HashiCorp - Install : Install Autocompletion - Terraform"
-      #     ansible.builtin.command: "terraform -install-autocomplete"
-      #     become: "{{ item }}"
-      #     loop:
-      #         - "true"
-      #         - "false"
-      #     register: autoinstall_cmd
-      #     changed_when:
-      #         - not 'already installed' in autoinstall_cmd.stderr
-      #         - not 'already installed' in autoinstall_cmd.stdout
-      #     failed_when:
-      #         - autoinstall_cmd.rc != 0
-      #         - not 'already installed' in autoinstall_cmd.stderr
-      #         - not 'already installed' in autoinstall_cmd.stdout
-
-      #   - name: "HashiCorp - Install : Install Autocompletion - Vagrant"
-      #     ansible.builtin.command: "vagrant autocomplete install --bash"
-      #     become: "{{ item }}"
-      #     loop:
-      #         - "true"
-      #         - "false"
-      #     register: autoinstall_cmd
-      #     changed_when:
-      #         - not 'already installed' in autoinstall_cmd.stderr
-      #         - not 'already installed' in autoinstall_cmd.stdout
-      #     failed_when:
-      #         - autoinstall_cmd.rc != 0
-      #         - not 'already installed' in autoinstall_cmd.stderr
-      #         - not 'already installed' in autoinstall_cmd.stdout

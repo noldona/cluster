@@ -33,6 +33,12 @@ on the Easy RSA website as they provide a good overview of the topic.
 | ssl_ca_filename     | `Home-Lab-CA` | The filename for your CA Authority key and certficiate |
 | ssl_ca_passphrase   | ``            | This is the password for your CA Authority key         |
 
+#### Variable Files
+
+-   vars/general/main.yaml
+-   vars/general/ssl.yaml
+-   vars/general/secrets.yaml
+
 > [!IMPORTANT]  
 > The ansible script expects a `vars/genera/secrets.yaml` file to exist.
 > As this file will contain things like passwords and should not be commited
@@ -174,6 +180,5 @@ scp head:/home/{{ username }}/easy-rsa/pki/ca.crt ~/ssl/certs
 
 ## Reference Links
 
-https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-a-certificate-authority-ca-on-ubuntu-20-04
-
-https://easy-rsa.readthedocs.io/en/latest/intro-to-PKI/
+-   https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-a-certificate-authority-ca-on-ubuntu-20-04
+-   https://easy-rsa.readthedocs.io/en/latest/intro-to-PKI/

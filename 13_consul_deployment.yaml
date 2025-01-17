@@ -4,14 +4,14 @@
   become: true
 
   vars_files:
-      - vars/general/main.yaml
+      - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
       - vars/hashicorp/consul.yaml
 
   # Uncomment and fill the variables below if you need to run the playbook again.
   # You can find the relevant data on any of the hosts in /etc/consul.d/consul.hcl
-  vars:
-      - consul_encryption_key: "8l8vWLc4QZyypGxoUyUYvJYEGdMahbPJbd0kQzELecI="
+  # vars:
+  #     - consul_encryption_key: "8l8vWLc4QZyypGxoUyUYvJYEGdMahbPJbd0kQzELecI="
 
   tasks:
       - name: "HashiCorp - Consul : Ensure data directory is present"
@@ -57,7 +57,7 @@
                     block:
                         - name: "HashiCorp - Consul : Register first server as a fact."
                           ansible.builtin.set_fact:
-                              consul_first_server_hostname: "{{ inventory_hostname }}"
+                              consul_first_server_hostname: "{{ ansible_hostname }}"
                           delegate_to: "{{ groups['servers'] | first }}"
                           run_once: true # noqa run-once[task]
 
@@ -70,7 +70,7 @@
 
                         - name: "HashiCorp - Consul : CA Certificate creation"
                           when:
-                              - inventory_hostname in groups['servers']
+                              - ansible_hostname in groups['servers']
                               - not consul_agent_ca_file_first.stat.exists
                           delegate_to: "{{ groups['servers'] | first }}"
                           run_once: true # noqa run-once[task]
@@ -127,7 +127,7 @@
                         label: "{{ item.dest }}"
                     when:
                         - consul_tls_ca_certificate_content is defined
-                        - inventory_hostname != consul_first_server_hostname
+                        - ansible_hostname != consul_first_server_hostname
 
             # Server Certificates
             - name: "HashiCorp - Consul : Server Certificates"

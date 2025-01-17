@@ -4,7 +4,7 @@
   become: true
 
   vars_files:
-      - vars/general/main.yaml
+      - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
       - vars/hashicorp/nomad.yaml
       - vars/hashicorp/ssl.yaml

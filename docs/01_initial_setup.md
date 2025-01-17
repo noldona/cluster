@@ -203,6 +203,11 @@ sudo reboot
 | head_node_ip      | `192.168.1.31` | The IP address for the head node        |
 | head_node_gateway | `192.168.1.1`  | The Gateway IP address for home network |
 
+#### Variable Files
+
+-   vars/general/main.yaml
+-   vars/general/head.yaml
+
 If you are using Ansible, set these variables appropriately, and run the
 script now. Once it is done, go to [Step 4.3](#step-33-clear-ssh-keys-from-hashistack-nodes).
 
@@ -287,4 +292,4 @@ To exit the container, press `CTRL+]` 3 times.
 
 ## Reference Links
 
-https://www.raspberrypi.com/tutorials/cluster-raspberry-pi-tutorial/
+-   https://www.raspberrypi.com/tutorials/cluster-raspberry-pi-tutorial/

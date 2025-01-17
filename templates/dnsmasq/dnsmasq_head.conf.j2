@@ -1,0 +1,26 @@
+domain-needed
+bogus-priv
+strict-order
+no-resolv
+server=192.168.1.1
+server=8.8.8.8
+server=4.4.4.4
+address=/head.cluster/10.0.0.1
+{% for node in nodes %}
+address=/{{ node.hostname }}.cluster/{{ node.address }}
+{% endfor %}
+address=/.cluster/10.0.0.1
+address-/.consul/{{ (nodes | first).address }}
+interface=eth0
+interface=tun0
+expand-hosts
+domain=cluster
+dhcp-range=10.0.0.50,10.0.0.150,12h
+dhcp-range-10.0.0.0,static
+{% for node in nodes %}
+dhcp=host={{ node.mac_address }},{{ node.hostname }},{{ node.address }},infinite
+{% endfor %}
+pxe-service=0,"Raspberry Pi Boot"
+enable-tftp
+tftp-root=/tftpboot
+tftp-unique-root=mac

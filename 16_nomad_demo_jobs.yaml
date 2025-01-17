@@ -4,11 +4,10 @@
   become: true
 
   vars_files:
-      - vars/general/main.yaml
+      - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
       - vars/hashicorp/nomad.yaml
       - vars/hashicorp/demo.yaml
-      - vars/hashicorp/ssl.yaml
 
   tasks:
       - name: "HashiCorp - Nomad - Jobs : Retrieve operator Secret ID"

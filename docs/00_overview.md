@@ -71,4 +71,4 @@ Check the [Inventory](../inventory.yaml) for a list of the nodes
 
 ## Reference Links
 
-https://www.thingiverse.com/thing:4078710
+-   https://www.thingiverse.com/thing:4078710

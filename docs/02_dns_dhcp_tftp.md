@@ -66,6 +66,11 @@ Update the [General Main Vars File](../../vars/general/main.yaml) in the
 | nodes.address     | The IP Address of the node                             |
 | nodes.mac_address | The MAC Address of the node found in the previous step |
 
+#### Variable Files
+
+-   vars/general/main.yaml
+-   vars/general/dns.yaml
+
 If you are running the Ansible script, esnure the MAC addresses are set
 and run the script now. Once it is done, go to [Step 5](#step-5-start-the-hashistack-nodes).
 
@@ -171,14 +176,9 @@ journalctl --unit dnsmasq.service --follow
 
 ## Refence Links
 
-https://netbeez.net/blog/how-to-set-up-dns-server-dnsmasq/
-
-https://netbeez.net/blog/how-to-set-up-dns-server-dnsmasq-part-4/
-
-https://netbeez.net/blog/read-only-tftp-dnsmasq/
-
-https://linuxconfig.org/how-to-configure-a-raspberry-pi-as-a-pxe-boot-server
-
-https://raspberrypi.stackexchange.com/questions/87262/netbooting-multiple-workers-rpi-from-a-master-rpi
-
-https://linux-tips.com/t/dnsmasq-show-ip-lease-information/231
+-   https://netbeez.net/blog/how-to-set-up-dns-server-dnsmasq/
+-   https://netbeez.net/blog/how-to-set-up-dns-server-dnsmasq-part-4/
+-   https://netbeez.net/blog/read-only-tftp-dnsmasq/
+-   https://linuxconfig.org/how-to-configure-a-raspberry-pi-as-a-pxe-boot-server
+-   https://raspberrypi.stackexchange.com/questions/87262/netbooting-multiple-workers-rpi-from-a-master-rpi
+-   https://linux-tips.com/t/dnsmasq-show-ip-lease-information/231

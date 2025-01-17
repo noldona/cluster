@@ -1,0 +1,8 @@
+---
+ssl_webapp_filename: "{{ demo_fqdn }}"
+ssl_webapp_keyfile_path: "{{ ssl_key_dir }}/{{ ssl_webapp_filename }}.key"
+ssl_webapp_certfile_path: "{{ ssl_cert_dir }}/{{ ssl_webapp_filename }}.crt"
+
+ssl_member_filename: "{{ ansible_hostname }}.{{ demo_fqdn }}"
+ssl_member_keyfile_path: "{{ ssl_key_dir }}/{{ ssl_member_filename }}.key"
+ssl_member_certfile_path: "{{ ssl_cert_dir }}/{{ ssl_member_filename }}.crt"

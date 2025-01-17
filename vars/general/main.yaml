@@ -1,8 +1,8 @@
 ---
-username: pi
+username: noldona
 release: noble
 timezone: "America/New_York"
-demo_fqdn: "homelab.cluster"
+demo_fqdn: "rivercrest.cluster"
 
 head_node_ip: 192.168.1.31
 head_node_gateway: 192.168.1.1

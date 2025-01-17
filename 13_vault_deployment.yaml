@@ -4,11 +4,13 @@
   become: true
 
   vars_files:
-      - vars/general/main.yaml
+      - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
       - vars/hashicorp/consul.yaml
       - vars/hashicorp/vault.yaml
       - vars/hashicorp/ssl.yaml
+      - vars/general/ssl.yaml
+      - vars/general/secrets.yaml
 
   tasks:
       - name: "HashiCorp - Vault : Ensure data directory is present"
@@ -106,6 +108,7 @@
                   provider: ownca
                   ownca_path: "{{ ssl_ca_certfile_path }}"
                   ownca_privatekey_path: "{{ ssl_ca_keyfile_path }}"
+                  privatekey_passphrase: "{{ ssl_ca_passphrase }}"
               register: certificate
               delegate_to: head
 

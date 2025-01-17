@@ -1,0 +1,25 @@
+venv: /opt/hashistack-venv
+
+pip_install_packages:
+  - cryptography
+  - docker
+  - hvac
+  - jmespath
+  - python-nomad
+
+basic_apt_packages:
+  - atop
+  - curl
+  - jq
+  - lynx
+  - tree
+  - unattended-upgrades
+  - vim
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - python3-pip
+  - virtualenv
+  - python3-setuptools
+  - gnupg
