@@ -4,6 +4,7 @@
   become: true
 
   vars_files:
+      - vars/general/main.yaml
       - vars/general/hashi_nodes.yaml
       - vars/hashicorp/main.yaml
       - vars/hashicorp/consul.yaml
@@ -169,7 +170,7 @@
               when: not consul_encryption_key is defined
               run_once: true # noqa run-once[task]
               block:
-                  - name: "HashiCorp - Consul : Generate encryption key when clust is not running yet"
+                  - name: "HashiCorp - Consul : Generate encryption key when cluster is not running yet"
                     when:
                         - ansible_hostname in groups['servers']
                         - not consul_systemd_service_file_details.stat.exists
