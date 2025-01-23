@@ -53,6 +53,10 @@ script now. Once it is done, go to [Next Step](#next-step).
 
 If you want to run the steps manually, continue here.
 
+> [!IMPORTANT]  
+> You will need to run each of these steps on each of the Hashistack
+> nodes unless otherwise mentioned.
+
 ## Step 1: Install the required software
 
 First, we will need to install some basic software that we will need in
@@ -90,6 +94,8 @@ pip install cryptography docker hvac jmespath python-nomad
 ```
 
 ## Step 3: Create a token directory
+
+Run this step on your localhost.
 
 As each of the HashiCorp software uses tokens for authentication, we will
 need a place to store our tokens for future reference. The easiest place

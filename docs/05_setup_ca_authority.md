@@ -40,7 +40,7 @@ on the Easy RSA website as they provide a good overview of the topic.
 -   vars/general/secrets.yaml
 
 > [!IMPORTANT]  
-> The ansible script expects a `vars/genera/secrets.yaml` file to exist.
+> The ansible script expects a `vars/general/secrets.yaml` file to exist.
 > As this file will contain things like passwords and should not be commited
 > to your repository, you will need to create this file and add the
 > `ssl_ca_passphrase` variable to it. The file is listed in the .gitignore

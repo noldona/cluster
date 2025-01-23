@@ -64,7 +64,7 @@
         tags: dns
 
   handlers:
-      - name: "DNSMasq : Restart dnsmasq"
+      - name: Restart dnsmasq
         ansible.builtin.service:
             name: dnsmasq
             state: restarted
