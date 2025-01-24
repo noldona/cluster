@@ -40,59 +40,59 @@ ssh-keygen -t ed25519
 
 ```bash
 cat >> ~/.ssh/config << EOF
-Host {{ server1.hostname }}
-	HostName {{ server1.address }}
-	User {{ username }}
+Host server1
+	HostName 10.0.0.2
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ server2.hostname }}
-	HostName {{ server2.address }}
-	User {{ username }}
+Host server2
+	HostName 10.0.0.3
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ server3.hostname }}
-	HostName {{ server3.address }}
-	User {{ username }}
+Host server3
+	HostName 10.0.0.4
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client1.hostname }}
-	HostName {{ client1.address }}
-	User {{ username }}
+Host client1
+	HostName 10.0.0.5
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client2.hostname }}
-	HostName {{ client2.address }}
-	User {{ username }}
+Host client2
+	HostName 10.0.0.6
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client3.hostname }}
-	HostName {{ client3.address }}
-	User {{ username }}
+Host client3
+	HostName 10.0.0.7
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client4.hostname }}
-	HostName {{ client4.address }}
-	User {{ username }}
+Host client4
+	HostName 10.0.0.8
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client5.hostname }}
-	HostName {{ client5.address }}
-	User {{ username }}
+Host client5
+	HostName 10.0.0.9
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client6.hostname }}
-	HostName {{ client6.address }}
-	User {{ username }}
+Host client6
+	HostName 10.0.0.10
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client7.hostname }}
-	HostName {{ client7.address }}
-	User {{ username }}
+Host client7
+	HostName 10.0.0.11
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ client8.hostname }}
-	HostName {{ client8.address }}
-	User {{ username }}
+Host client8
+	HostName 10.0.0.12
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 EOF
@@ -104,10 +104,21 @@ Finally, we need to add the key to the authorized keys on the Hashistack
 nodes. We will take advantage of the network booting nature of the cluster
 to add these values easily.
 
-On the head node, run the following command for each of the Hashistack nodes.
+On the head node, run the following command to add the SSH key to each of
+the Hashistack nodes.
 
 ```bash
-cat ~/.ssh/id_rsa.pub | tee -a /nfs/{{ item.hostname }}/home/{{ username }}/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/server1/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/serevr2/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/server3/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client1/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client2/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client3/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client4/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client5/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client6/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client7/home/pi/.ssh/authorized_keys > /dev/null
+cat ~/.ssh/id_ed25519.pub | tee -a /nfs/client8/home/pi/.ssh/authorized_keys > /dev/null
 ```
 
 ## Next Step

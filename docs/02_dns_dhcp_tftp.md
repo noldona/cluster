@@ -90,36 +90,36 @@ server={{ head_node_gateway }}
 server=8.8.8.8
 server=4.4.4.4
 address=/head.cluster/10.0.0.1
-address=/{{ server1.hostname }}.cluster/{{ server1.address }}
-address=/{{ server2.hostname }}.cluster/{{ server2.address }}
-address=/{{ server3.hostname }}.cluster/{{ server3.address }}
-address=/{{ client1.hostname }}.cluster/{{ client1.address }}
-address=/{{ client2.hostname }}.cluster/{{ client2.address }}
-address=/{{ client3.hostname }}.cluster/{{ client3.address }}
-address=/{{ client4.hostname }}.cluster/{{ client4.address }}
-address=/{{ client5.hostname }}.cluster/{{ client5.address }}
-address=/{{ client6.hostname }}.cluster/{{ client6.address }}
-address=/{{ client7.hostname }}.cluster/{{ client7.address }}
-address=/{{ client8.hostname }}.cluster/{{ client8.address }}
+address=/server1.cluster/10.0.0.2
+address=/server2.cluster/10.0.0.3
+address=/server3.cluster/10.0.0.4
+address=/client1.cluster/10.0.0.5
+address=/client2.cluster/10.0.0.6
+address=/client3.cluster/10.0.0.7
+address=/client4.cluster/10.0.0.8
+address=/client5.cluster/10.0.0.9
+address=/client6.cluster/10.0.0.10
+address=/client7.cluster/10.0.0.11
+address=/client8.cluster/10.0.0.12
 address=/.cluster/10.0.0.1
-address-/.consul/{{ server1.address }}
+address-/.consul/10.0.0.2
 interface=eth0
 interface=tun0
 expand-hosts
 domain=cluster
 dhcp-range=10.0.0.50,10.0.0.150,12h
 dhcp-range-10.0.0.0,static
-dhcp=host={{ server1.mac_address }},{{ server1.hostname }},{{ server1.address }},infinite
-dhcp=host={{ server2.mac_address }},{{ server2.hostname }},{{ server2.address }},infinite
-dhcp=host={{ server3.mac_address }},{{ server3.hostname }},{{ server3.address }},infinite
-dhcp=host={{ client1.mac_address }},{{ client1.hostname }},{{ client1.address }},infinite
-dhcp=host={{ client2.mac_address }},{{ client2.hostname }},{{ client2.address }},infinite
-dhcp=host={{ client3.mac_address }},{{ client3.hostname }},{{ client3.address }},infinite
-dhcp=host={{ client4.mac_address }},{{ client4.hostname }},{{ client4.address }},infinite
-dhcp=host={{ client5.mac_address }},{{ client5.hostname }},{{ client5.address }},infinite
-dhcp=host={{ client6.mac_address }},{{ client6.hostname }},{{ client6.address }},infinite
-dhcp=host={{ client7.mac_address }},{{ client7.hostname }},{{ client7.address }},infinite
-dhcp=host={{ client8.mac_address }},{{ client8.hostname }},{{ client8.address }},infinite
+dhcp=host={{ server1.mac_address }},server1,10.0.0.2,infinite
+dhcp=host={{ server2.mac_address }},server2,10.0.0.3,infinite
+dhcp=host={{ server3.mac_address }},server3,10.0.0.4,infinite
+dhcp=host={{ client1.mac_address }},client1,10.0.0.5,infinite
+dhcp=host={{ client2.mac_address }},client2,10.0.0.6,infinite
+dhcp=host={{ client3.mac_address }},client3,10.0.0.7,infinite
+dhcp=host={{ client4.mac_address }},client4,10.0.0.8,infinite
+dhcp=host={{ client5.mac_address }},client5,10.0.0.9,infinite
+dhcp=host={{ client6.mac_address }},client6,10.0.0.10,infinite
+dhcp=host={{ client7.mac_address }},client7,10.0.0.11,infinite
+dhcp=host={{ client8.mac_address }},client8,10.0.0.12,infinite
 pxe-service=0,"Raspberry Pi Boot"
 enable-tftp
 tftp-root=/tftpboot

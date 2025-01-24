@@ -88,7 +88,7 @@ We also want to restrict access to this directory to ensure only our
 user can access it.
 
 ```bash
-chmod 700 /home/{{ username }}/easy-rsa
+chmod 700 /home/pi/easy-rsa
 ```
 
 Finally, we need to initialize the PKI inside of the `easy-rsa` directory.
@@ -171,7 +171,7 @@ certificate for use later, and then copy the certificate to your localhost.
 
 ```bash
 mkdir -p ~/ssl/certs
-scp head:/home/{{ username }}/easy-rsa/pki/ca.crt ~/ssl/certs
+scp head:/home/pi/easy-rsa/pki/ca.crt ~/ssl/certs
 ```
 
 ## Next Step
