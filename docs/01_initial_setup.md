@@ -51,72 +51,72 @@ Add the following into your `~/.ssh/config` file on your localhost:
 ```
 Host head
 	HostName {{ head_node_ip }}
-	User {{ username }}
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
-Host {{ server1.hostname }}
-	HostName {{ server1.address }}
-	User {{ username }}
-	Port 22
-	IdentityFile ~/.ssh/id_ed25519
-	ProxyCommand ssh head -W %h:%p
-Host {{ server2.hostname }}
-	HostName {{ server2.address }}
-	User {{ username }}
+Host server1
+	HostName 10.0.0.2
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ server3.hostname }}
-	HostName {{ server3.address }}
-	User {{ username }}
+Host server2
+	HostName 10.0.0.3
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client1.hostname }}
-	HostName {{ client1.address }}
-	User {{ username }}
+Host server3
+	HostName 10.0.0.4
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client2.hostname }}
-	HostName {{ client2.address }}
-	User {{ username }}
+Host client1
+	HostName 10.0.0.5
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client3.hostname }}
-	HostName {{ client3.address }}
-	User {{ username }}
+Host client2
+	HostName 10.0.0.6
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client4.hostname }}
-	HostName {{ client4.address }}
-	User {{ username }}
+Host client3
+	HostName 10.0.0.7
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client5.hostname }}
-	HostName {{ client5.address }}
-	User {{ username }}
+Host client4
+	HostName 10.0.0.8
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client6.hostname }}
-	HostName {{ client6.address }}
-	User {{ username }}
+Host client5
+	HostName 10.0.0.9
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client7.hostname }}
-	HostName {{ client7.address }}
-	User {{ username }}
+Host client6
+	HostName 10.0.0.10
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
-Host {{ client8.hostname }}
-	HostName {{ client8.address }}
-	User {{ username }}
+Host client7
+	HostName 10.0.0.11
+	User pi
+	Port 22
+	IdentityFile ~/.ssh/id_ed25519
+	ProxyCommand ssh head -W %h:%p
+Host client8
+	HostName 10.0.0.12
+	User pi
 	Port 22
 	IdentityFile ~/.ssh/id_ed25519
 	ProxyCommand ssh head -W %h:%p
@@ -136,7 +136,7 @@ During the OS customization stage, edit the settings as follows:
 -   Enter a hostname
     -   For this tutorial, we are going to use `head`
 -   Enter a username and password
-    -   Use the `{{ username }}` value as the username here
+    -   Use the `pi` value as the username here
     -   Whatever name you choose will be used on all of the Hashistack
         nodes as well
 -   Do NOT enable the WiFi option

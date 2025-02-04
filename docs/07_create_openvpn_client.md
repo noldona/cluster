@@ -72,16 +72,16 @@ run the following.
 
 ```bash
 cd ~/easy-rsa
-./easyrsa gen-req {{ client_config_client_name }} nopass
+./easyrsa gen-req pi nopass
 ```
 
 ### Step 2.2: Copy the private key to the client config private directory
 
-The private key, `~/easy-rsa/pki/private/{{ client_config_client_name}}.key`,
+The private key, `~/easy-rsa/pki/private/pi.key`,
 needs to be copied over to the client configs private directory.
 
 ```bash
-sudo cp ~/easy-rsa/pki/private/{{ client_config_client_name }}.key ~/client_configs/private
+sudo cp ~/easy-rsa/pki/private/pi.key ~/client_configs/private
 ```
 
 ### Step 2.3: Sign the CSR using our CA key
@@ -90,7 +90,7 @@ The certificate signing request (CSR) needs to be signed by our CA key.
 This can be done using the following command.
 
 ```bash
-./easyrsa sign-req client {{ client_config_client_name }}
+./easyrsa sign-req client pi
 ```
 
 You will be prompted for the CA key passphrase. Use the passphrase you
@@ -98,11 +98,11 @@ entered when you created the CA key here.
 
 ### Step 2.4: Copy the public certificate to the client config certs directory
 
-The previous will create the certificate file, `~/easy-rsa/pki/issued/{{ client_config_client_name }}.crt`.
+The previous will create the certificate file, `~/easy-rsa/pki/issued/pi.crt`.
 This file needs to be copied to the client configs certs directory.
 
 ```bash
-sudo cp ~/easy-rsa/pki/issued/{{ client_config_client_name }}.ct ~/client-configs/certs
+sudo cp ~/easy-rsa/pki/issued/pi.ct ~/client-configs/certs
 ```
 
 ## Step 3: Create client config creation script
@@ -288,17 +288,17 @@ Now, we can create the client config. Run the script we just created.
 
 ```bash
 cd ~/client-configs
-./make_config.sh {{ client_config_client_name }}
+./make_config.sh pi
 ```
 
-This will create a file named `{{ client_config_client_name }}.ovpn` in
+This will create a file named `pi.ovpn` in
 the `~/client-configs/files` directory. Transfer thiis file to the client
 machine, such as your localhost.
 
 On your localhost, run the following to transfer the file.
 
 ```bash
-scp head:/home/{{ username }}/client-configs/files/{{ client_config_client_name }}.ovpn /home/{{ username }}
+scp head:/home/pi/client-configs/files/pi.ovpn /home/pi
 ```
 
 If you are setting up a client for a different machine, such as a mobile

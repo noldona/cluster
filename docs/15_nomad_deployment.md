@@ -1,10 +1,10 @@
-# Install Hashistack
+# Nomad Deployment
 
 We are now going to install Consul, Vault, and Nomad on the Hashistack
 nodes. The are the main components that will make the Hashistack work.
 
 > [!NOTE]  
-> **_Ansible Script:_** [##\_name.yaml](../##_name.yaml)
+> **_Ansible Script:_** [15_nomad_deployment.yaml](../15_nomad_deployment.yaml)
 
 #### Most noticable / important variables
 
@@ -31,7 +31,7 @@ If you want to run the steps manually, continue here.
 
 ## Next Step
 
-[Name](##_name.md)
+[Nomad Vault Integration](16_nomad_vault_integratiion.md)
 
 ## Reference Links
 

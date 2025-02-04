@@ -35,13 +35,13 @@ If you want to run the steps manually, continue here.
 ## Step 1: Create required directories
 
 First, we need to create some directories which will be needed for our
-Consul set. These directories are `/etc/consul.d`, `/opt/consul`, and
+Consul installs. These directories are `/etc/consul.d`, `/opt/consul`, and
 `/var/log/consul`. Run the following to create them and set the correct
 permissions for these directories.
 
 ```bash
 # Ensure data directory is present
-sudo mkdir -p /opt/consu
+sudo mkdir -p /opt/consul
 sudo chown consul:consul /opt/consul
 sudo chmod 0755 /opt/consul
 
@@ -56,12 +56,20 @@ sudo chown consul:consul /var/log/consul
 sudo chmod 0755 /var/log/consul
 ```
 
-## Step 2: Setup encryption
+## Step 2: Ensure Consul is excluded from the unattended upgrades
+
+We want to prevent Consul from being upgraded automatically to prevent
+any issues that might arise from version differences.
+
+Open `/usr/share/unattended-upgrades/50unattended-upgrades` and add
+`consul` to the file after the `Unattended-Upgrade::Pacage-Blacklist` line.
+
+## Step 3: Setup encryption
 
 One of the benefits of Consul is it allows encrypted communication
 between the different nodes. To do this, we need to setup some key pairs.
 
-### Step 2.1: Create CA Certificate
+### Step 3.1: Create CA Certificate
 
 To setup these key pairs, we need to create a CA key and certificate
 using Consul. So on server1, run the following.
@@ -79,7 +87,7 @@ certificate file in the current directory.
 ==> Saved consul-agent-ca-key.pem
 ```
 
-### Step 2.2: Copy these files to the other nodes
+### Step 3.2: Copy these files to the other nodes
 
 We need to copy these files over to the other nodes so all the Consul
 instance use the same CA files. As we have not setup direct SSH connection
@@ -128,7 +136,7 @@ sudo chown consul:consul /etc/consul.d/consul-agent-ca-key.pem
 sudo chmod 060 /etc/consul.d/consul-agent-ca-key.pem
 ```
 
-### Step 2.3: Create the server key pairs
+### Step 3.3: Create the server key pairs
 
 Next, we need to create key pairs for each of the servers. Run the following
 to create them on the server nodes (server1, server2, and server3).
@@ -140,7 +148,7 @@ sudo consul tls cert create -server -dc homelab -days 1827
 
 This should create a `homelab-server-consul-0.pem` file.
 
-### Step 2.4: Create the client key pairs
+### Step 3.4: Create the client key pairs
 
 Similarly, we need to create key pairs for each of the clients. Run the
 following to create them on each of the client nodes.
@@ -152,7 +160,7 @@ sudo consul tls cert create -client -dc homelab -days 1827
 
 This should create a `homelab-client-consul-0.pem` file.
 
-### Step 2.5: Create an encryption key
+### Step 3.5: Create an encryption key
 
 This only needs to be run once. It can be run on any of the Hashistack
 nodes.
@@ -165,7 +173,7 @@ Make note of the encryption key that is outputted from the command. We
 will need this to configure Consul. You will need to replace any
 `{{ consul_encryption_key }}` with the value from this output.
 
-### Step 2.6: Ensure correct file owner / group for all certificates
+### Step 3.6: Ensure correct file owner / group for all certificates
 
 For each of the `.pem` files in the `/etc/consul.d` directory, we need
 to set the correct file owner and groups values.
@@ -174,12 +182,12 @@ to set the correct file owner and groups values.
 sudo chown consul:consul -R /etc/consul.d/*.pem
 ```
 
-## Step 3: Configure Consul
+## Step 4: Configure Consul
 
 Now, with the keys generated, we can setup the configuration we need to
 be able to start the service.
 
-### Step 3.1: Create config file
+### Step 4.1: Create config file
 
 First, we will create a config file at `/etc/consul.d/consul.hcl`.
 
@@ -285,7 +293,7 @@ connect {
 EOF
 ```
 
-### Step 3.2: Create service file and start the service
+### Step 4.2: Create service file and start the service
 
 We also want to make a service file for starting the Consul service
 easier.
@@ -321,7 +329,7 @@ And now we can start the service.
 sudo service consul start
 ```
 
-### Step 3.4: Ensure all of the nodes have started
+### Step 4.4: Ensure all of the nodes have started
 
 Once you have started the Consul service on all of the nodes, run the
 following to verify that all of the nodes are up and communicating. You
@@ -331,7 +339,7 @@ can do this by running the following command.
 sudo consul members
 ```
 
-## Step 4: Bootstrap the ACL
+## Step 5: Bootstrap the ACL
 
 We are going to setup the Access Control List (ACL) for Consul. This
 will give us finer grain control of the access to Consul so that we can
@@ -357,12 +365,12 @@ for further Consul commands.
 sudo export CONSUL_HTTP_TOKEN={{ consul_acl_bootstrap_secret_id }}
 ```
 
-## Step 5: Create agent policy and token
+## Step 6: Create agent policy and token
 
 We need to create an agent that the Consul nodes will use talking to
 each other. Run these steps only on the server1 node.
 
-### Step 5.1: Create agent policy file
+### Step 6.1: Create agent policy file
 
 We are going to start by creating a file that contains the ACL policy
 that our agent will use.
@@ -378,7 +386,7 @@ service_prefix "" {
 EOF
 ```
 
-### Step 5.2: Create agent policy
+### Step 6.2: Create agent policy
 
 We will now use the file we just created to create the agent policy in
 Consul.
@@ -388,7 +396,7 @@ cd /opt/consul
 sudo consul acl policy create -name consul-agent -rules @consul-agent-policy.hcl
 ```
 
-### Step 5.3: Create the agent token
+### Step 6.3: Create the agent token
 
 We will now create a token that will use this newly created policy.
 
@@ -402,7 +410,7 @@ the SecretID value from this output. We will refer to this as the
 `{{ consul_agent_token }}` variable. If you see this variable in further
 steps, replace it with this value.
 
-### Step 5.4: Update the config
+### Step 6.4: Update the config
 
 For this step, we need to update the config we made in
 [Step 3.1](#step-31-create-config-file) with the agent token. On each of
@@ -433,12 +441,12 @@ policy.
 sudo service consult restart
 ```
 
-## Step 6: Create DNS policy and token
+## Step 7: Create DNS policy and token
 
 We also need to setup a DNS token that the Consul agent will use. Run
 these steps only on the server1 node.
 
-### Step 6.1: Create DNS policy file
+### Step 7.1: Create DNS policy file
 
 We need to create a file that will contain the ACL policy that will be
 used for the DNS policy.
@@ -457,7 +465,7 @@ query_prefix "" {
 EOF
 ```
 
-### Step 6.2: Create DNS policy
+### Step 7.2: Create DNS policy
 
 We will now use the file we just created to create the DNS policy in Consul.
 
@@ -466,7 +474,7 @@ cd /opt/consul
 sudo consul acl policy create -name dns-requests -rules @dns-request-policy.hcl
 ```
 
-### Step 6.3: Create the DNS token
+### Step 7.3: Create the DNS token
 
 We will now create a token that will use this newly create policy.
 
@@ -480,7 +488,7 @@ need the SecretID value from this output. We will refer to this as the
 `{{ consul_dns_token }}` variable. If you see this variable in futher
 steps, replace it with this value.
 
-### Step 6.4: Set the DNS token as the default
+### Step 7.4: Set the DNS token as the default
 
 We will now use this DNS token we just made as the default for the agents.
 
@@ -488,12 +496,12 @@ We will now use this DNS token we just made as the default for the agents.
 sudo consul acl set-agent-token default '{{ consul_dns_token }}'
 ```
 
-## Step 7: Install Service Mesh plugin
+## Step 8: Install Service Mesh plugin
 
 Finally, we need to install a service mesh plugin. These steps will need
 to be run only on the client nodes.
 
-### Step 7.1: Create CNI directory
+### Step 8.1: Create CNI directory
 
 We need a directory where we will store the plugin file.
 
@@ -501,7 +509,7 @@ We need a directory where we will store the plugin file.
 sudo mkdir /opt/cni/bin
 ```
 
-### Step 7.2: Download the service mesh plugin
+### Step 8.2: Download the service mesh plugin
 
 Next, we need to download the service mesh plugin into the directory we
 just created.
@@ -510,7 +518,7 @@ just created.
 sudo wget -c https://github.com/containernetworking/plugins/releases/download/v1.5.1/cni-plugins-linux-arm64-v1.5.1.tgz -O - | sudo tar -xz -C /opt/cni/bin
 ```
 
-### Step 7.3: Set the kernel tunables
+### Step 8.3: Set the kernel tunables
 
 We need to set some settings to allow the containers to used bridged
 network access so they can talk with each other.

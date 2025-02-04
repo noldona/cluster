@@ -217,7 +217,7 @@
                         consul_acl_bootstrap_secret_id: "{{ consul_acl_bootstrap_output.stdout }}"
 
                   - name: "HashiCorp - Vault - ACL - Consul : Ensure that the ACL is present in Consul"
-                    ansible.builtin.command: "{{ consul_binary }} acl policy create -name {{ vault_consul_service_name }} - rules @{{ vault_service_policy_file_name }}"
+                    ansible.builtin.command: "{{ consul_binary }} acl policy create -name {{ vault_consul_service_name }} -rules @{{ vault_service_policy_file_name }}"
                     args:
                         chdir: "{{ vault_data_directory }}/"
                     environment:
@@ -453,7 +453,7 @@
               environment:
                   VAULT_TOKEN: "{{ vault_initial_root_token.stdout }}"
 
-            - name: "HasiCorp - Vault : Ensure that the KV secret engine is enabled and mounted"
+            - name: "HashiCorp - Vault : Ensure that the KV secret engine is enabled and mounted"
               ansible.builtin.command: "{{ vault_binary }} secrets enable -path={{ vault_kv_path }} -version=2 kv"
               environment:
                   VAULT_TOKEN: "{{ vault_initial_root_token.stdout }}"
@@ -496,17 +496,9 @@
                   - logging
 
             - name: "HashiCorp - Vault : Revoke root token"
-              ansible.builtin.uri:
-                  url: "{{ vault_address }}/v1/auth/token/revoke"
-                  method: POST
-                  headers:
-                      X-Vault-Token: "{{ admin_token }}"
-                  body_format: json
-                  body: '{ "token": "{{ vault_initial_root_token.stdout }}" }'
-                  status_code:
-                      - 200
-                      - 204
-                  validate_certs: false
+              ansible.builtin.shell: "{{ vault_binary }} token revoke {{ vault_initial_root_token.stdout }} -format=json"
+              environment:
+                  VAULT_TOKEN: "{{ admin_token }}"
               register: vault_revoke_response
 
       - name: "HashiCorp - Vault - Logging: Ensure logrotate file for Vault is present"

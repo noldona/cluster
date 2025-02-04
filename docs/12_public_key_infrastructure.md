@@ -105,7 +105,7 @@ for our web app.
 
 ```bash
 cd ~/easy-rsa
-./easyrsa gen-req {{ demo_fqdn }} nopass
+./easyrsa gen-req --subject-alt-name="DNS:homelab.cluster" homelab.cluster nopass
 ```
 
 Just hit Enter when asked to confirm the Common Name.
@@ -117,7 +117,7 @@ node to be able to sign it. On the head node, run the following to copy
 the CSR over.
 
 ```bash
-scp server1:/home/{{ username }}/easy-rsa/pki/reqs/{{ demo_fqdn }}.req /tmp
+scp server1:/home/pi/easy-rsa/pki/reqs/homelab.cluster.req /tmp
 ```
 
 ### Step 2.3: Sign the CSR using our CA key
@@ -130,8 +130,8 @@ On the head node, run the following.
 
 ```bash
 cd ~/easy-rsa
-./easyrsa import-req /tmp/{{ demo_fqdn }}.req server
-./easyrsa sign-req server {{ demo_fqdn }}
+./easyrsa import-req /tmp/homelab.cluster.req server
+./easyrsa sign-req server homelab.cluster
 ```
 
 When prompted to verify that the request comes from a trusted source,
@@ -141,7 +141,7 @@ You will also be prompted to enter the passphrase you used to create the
 CA key.
 
 This will import the CSR and then sign it. It will generate the certificate
-at `~/easy-rsa/pki/issues/{{ demo_fqdn }}.crt`.
+at `~/easy-rsa/pki/issued/homelab.cluster.crt`.
 
 ### Step 2.4: Copy the signed certificate back to server1
 
@@ -150,14 +150,14 @@ On the head node, run the following to copy the certificate back to
 server1.
 
 ```bash
-scp ~/easy-rsa/pki/issued/{{ demo_fqdn }}.crt server1:/tmp
+scp ~/easy-rsa/pki/issued/homelab.cluster.crt server1:/tmp
 ```
 
-The on the server1 node, move the certificate file from `/tmp` to our
+Then on the server1 node, move the certificate file from `/tmp` to our
 `~/easy-rsa/pki/issued` directory.
 
 ```bash
-mv /tmp/{{ demo_fqdn }}.crt ~/easy-rsa/pki/issued/
+mv /tmp/homelab.cluster.crt ~/easy-rsa/pki/issued/
 ```
 
 ## Step 3: Copy the CA certificate to each of the nodes
