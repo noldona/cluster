@@ -165,6 +165,56 @@ to run on the 192.168.1.1/24 network. You may need to adjust the IP
 addresses apporpriate for your network setup. For the eth1 interface,
 choose an unused IP address on your network to set this statically to.
 
+Attach the USB-to-Ethernet adapter after booting the system so it will
+recognize the adapter. However, it will not automatically get an IP
+address, so we must set one temporarily to start with.
+
+On the head node, run the following and look for an adapter named either
+eth1 or something starting with enxc8. This will be your USB-to-Ethernet
+adapter. We will refer to this as `{{ adapter_name }}` in the follwing
+documentation. These commands will set a temporary IP address for the
+adapter.
+
+enxc84d4435d2ee
+
+```bash
+ip a
+sudo ip addr add {{ head_node_ip }}/24 dev {{ adapter_name }}
+sudo ip link set dev {{ adapter_name }} up
+ip a
+
+sudo nano /etc/netplan/50-cloud-init.yaml
+sudo netplan try
+sudo netplan apply
+sudo shutdown -r now
+
+network:
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: false
+      addresses:
+        - 10.0.0.1/24
+      routes:
+        - to: default
+          via: 10.0.0.1
+      nameservers:
+        addresses:
+          - 10.0.0.1
+    enxc84d4435d2ee:
+      dhcp4: false
+      addresses:
+        - 192.168.1.31/24
+      routes:
+        - to: 192.168.1.0/24
+          via: 192.168.1.1
+      nameservers:
+        addresses:
+          - 192.168.1.1
+```
+
+You should now see the adapter associated with the IP address.
+
 On the head node, run the following to set the static IP addresses for
 both network interfaces.
 
@@ -179,12 +229,12 @@ netmask 255.255.255.0
 gateway 10.0.0.1
 dns-nameservers = 10.0.0.1
 EOF
-sudo cat > /etc/network/interfaces.d/eth1 << EOF
-auto eth1
-iface eth1 inet static
+sudo cat > /etc/network/interfaces.d/{{ adapter_name }} << EOF
+auto {{ adapter_name }}
+iface {{ adapter_name }} inet static
 address {{ head_node_ip }}
 netmask 255.255.255.0
-gateway <head_node_gateway>
+gateway {{ head_node_gateway }}
 dns-nameservers = {{ head_node_gateway }}
 EOF
 sudo reboot
@@ -192,8 +242,7 @@ sudo reboot
 
 ### Step 4.2: Setup drive for the Hashistack nodes
 
-> [!NOTE]  
-> **_Ansible Script:_** [01_setup_hashistack_nodes.yaml](../01_setup_hashistack_nodes.yaml)
+> [!NOTE] > **_Ansible Script:_** [01_setup_hashistack_nodes.yaml](../01_setup_hashistack_nodes.yaml)
 
 #### Most noticable / important variables
 
@@ -293,3 +342,4 @@ To exit the container, press `CTRL+]` 3 times.
 ## Reference Links
 
 -   https://www.raspberrypi.com/tutorials/cluster-raspberry-pi-tutorial/
+-   https://www.reddit.com/r/Ubuntu/comments/1hxqpgw/any_guesses_why_a_usb_ethernet_adapter_would_be/

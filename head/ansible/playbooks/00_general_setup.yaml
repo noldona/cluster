@@ -1,0 +1,28 @@
+- name: General Setup
+  hosts: head
+  become: true
+
+  vars_files:
+      - ../vars/general/main.yaml
+
+  tasks:
+      - name: Install aptitude
+        ansible.builtin.apt:
+            name: aptitude
+            state: latest
+            update_cache: true
+
+      - name: Install required system packages
+        ansible.builtin.apt:
+            name: "{{ basic_apt_packages }}"
+            state: present
+        tags: apt
+
+      # - name: Install pip packages
+      #   ansible.builtin.pip:
+      #       name: "{{ pip_install_packages }}"
+      #       state: present
+
+      - name: Ensure the correct timezone is used
+        community.general.system.timezone:
+            name: "{{ timezone }}"

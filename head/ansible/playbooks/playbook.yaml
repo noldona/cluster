@@ -1,0 +1,19 @@
+- name: Ping
+  hosts: nodes
+  tasks:
+    - name: Ping my hosts
+      ansible.builtin.ping:
+
+    - name: Print message
+      ansible.builtin.debug:
+        msg: Hello world!
+
+    - name: Whoami
+      become: false
+      ansible.builtin.debug:
+        msg: User is {{ansible_user_id}}
+
+    - name: Become Whoami
+      become: true
+      ansible.builtin.debug:
+        msg: User is {{ansible_user_id}}
